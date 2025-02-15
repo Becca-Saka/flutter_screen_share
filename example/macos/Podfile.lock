@@ -1,0 +1,28 @@
+PODS:
+  - flutter_screen_share (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+  - texture_rgba_renderer (0.0.1):
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - flutter_screen_share (from `Flutter/ephemeral/.symlinks/plugins/flutter_screen_share/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - texture_rgba_renderer (from `Flutter/ephemeral/.symlinks/plugins/texture_rgba_renderer/macos`)
+
+EXTERNAL SOURCES:
+  flutter_screen_share:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_screen_share/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  texture_rgba_renderer:
+    :path: Flutter/ephemeral/.symlinks/plugins/texture_rgba_renderer/macos
+
+SPEC CHECKSUMS:
+  flutter_screen_share: 07fa42010e1f7af7e6a40cf3526a48b38e27422e
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  texture_rgba_renderer: cbed959a3c127122194a364e14b8577bd62dc8f2
+
+PODFILE CHECKSUM: fb191a4d0c8b0c9b663dde19a83f072149e445f0
+
+COCOAPODS: 1.16.2

@@ -1,0 +1,45 @@
+import 'dart:typed_data';
+
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
+import 'flutter_screen_share_method_channel.dart';
+import 'src/display.dart';
+
+abstract class FlutterScreenSharePlatform extends PlatformInterface {
+  /// Constructs a FlutterScreenSharePlatform.
+  FlutterScreenSharePlatform() : super(token: _token);
+
+  static final Object _token = Object();
+
+  static FlutterScreenSharePlatform _instance =
+      MethodChannelFlutterScreenShare();
+
+  /// The default instance of [FlutterScreenSharePlatform] to use.
+  ///
+  /// Defaults to [MethodChannelFlutterScreenShare].
+  static FlutterScreenSharePlatform get instance => _instance;
+
+  /// Platform-specific implementations should set this with their own
+  /// platform-specific class that extends [FlutterScreenSharePlatform] when
+  /// they register themselves.
+  static set instance(FlutterScreenSharePlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+    _instance = instance;
+  }
+
+  Future<Stream<Uint8List>> startCapture(Display? source) {
+    throw UnimplementedError('stopScreenCapture() has not been implemented.');
+  }
+
+  Future<List<Display>> getDisplays() {
+    throw UnimplementedError('stopScreenCapture() has not been implemented.');
+  }
+
+  Future<void> stopCapture() {
+    throw UnimplementedError('stopScreenCapture() has not been implemented.');
+  }
+
+  Future<List<Display>> getSources() {
+    throw UnimplementedError('stopScreenCapture() has not been implemented.');
+  }
+}
