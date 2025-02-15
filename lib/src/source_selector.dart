@@ -23,7 +23,7 @@ Future<Display?> showSourceSelectionDialog(BuildContext context) async {
             itemCount: sources.length,
             itemBuilder: (context, index) {
               final source = sources[index];
-              debugPrint(source.toMap().toString());
+
               final type = source.type;
               final owner = source.owner;
 

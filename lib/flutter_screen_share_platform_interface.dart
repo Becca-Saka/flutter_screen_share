@@ -4,6 +4,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_screen_share_method_channel.dart';
 import 'src/display.dart';
+import 'src/encording.dart';
 
 abstract class FlutterScreenSharePlatform extends PlatformInterface {
   /// Constructs a FlutterScreenSharePlatform.
@@ -27,7 +28,11 @@ abstract class FlutterScreenSharePlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<Stream<Uint8List>> startCapture(Display? source) {
+  Future<Map> startCapture([Display? source, EncodingOptions? options]) {
+    throw UnimplementedError('stopScreenCapture() has not been implemented.');
+  }
+
+  Stream<Uint8List> getStream() {
     throw UnimplementedError('stopScreenCapture() has not been implemented.');
   }
 

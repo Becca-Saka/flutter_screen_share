@@ -2,13 +2,18 @@ import 'dart:typed_data';
 
 import 'flutter_screen_share_platform_interface.dart';
 import 'src/display.dart';
+import 'src/encording.dart';
 
 export 'src/screen_share_controller.dart';
 export 'src/screen_share_view.dart';
 
 class FlutterScreenShare {
-  static Future<Stream<Uint8List>> startCapture(Display? source) {
-    return FlutterScreenSharePlatform.instance.startCapture(source);
+  static Future<Map> startCapture([Display? source, EncodingOptions? options]) {
+    return FlutterScreenSharePlatform.instance.startCapture(source, options);
+  }
+
+  static Stream<Uint8List> getStream() {
+    return FlutterScreenSharePlatform.instance.getStream();
   }
 
   static Future<void> stopCapture() {

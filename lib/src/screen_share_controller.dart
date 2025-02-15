@@ -8,20 +8,15 @@ import 'package:flutter_screen_share/src/source_selector.dart';
 import 'display.dart';
 
 class ScreenShareController {
-  TextureHandler textureHandler = TextureHandler();
-  bool showingPreview = false;
   ValueNotifier<bool> isSharing = ValueNotifier(false);
-  // bool isSharing = false;
+
   Stream<Uint8List>? frameStream;
   int? height;
   int? width;
+  int? textureId;
   StreamSubscription<Uint8List>? _subscription;
   Future<void> setShowingPreview(bool value) async {
-    showingPreview = value;
-    if (value && !textureHandler.initialized) {
-      await _getDisplaySize(null);
-      textureHandler.initialize();
-    }
+    await _getDisplaySize(null);
   }
 
   Future<void> _getDisplaySize(Display? source) async {
@@ -57,14 +52,15 @@ class ScreenShareController {
   }) async {
     try {
       await _getDisplaySize(source);
-      final stream = await FlutterScreenShare.startCapture(source);
+      final result = await FlutterScreenShare.startCapture(source);
       isSharing.value = true;
+      textureId = result['textureId'];
+
+      isSharing.value = true;
+      final stream = FlutterScreenShare.getStream();
       _subscription = stream.listen(
         (frame) {
           onData?.call(frame);
-          if (showingPreview) {
-            textureHandler.renderFrame(frame, width, height);
-          }
         },
         onError: (error) {
           debugPrint('Stream error: $error');
@@ -93,6 +89,5 @@ class ScreenShareController {
 
   void dispose() {
     stopCapture();
-    textureHandler.dispose();
   }
 }

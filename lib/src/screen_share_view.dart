@@ -1,12 +1,5 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_screen_share/flutter_screen_share.dart';
-import 'package:texture_rgba_renderer/texture_rgba_renderer.dart';
 
 class ScreenShareView extends StatefulWidget {
   final ScreenShareController controller;
@@ -29,10 +22,10 @@ class _ScreenShareViewState extends State<ScreenShareView> {
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
-    final texture = controller.textureHandler;
-    final textureId = texture.textureId;
-
-    if (textureId == -1) {
+    // final texture = controller.textureHandler;
+    final textureId = controller.textureId;
+    print(textureId);
+    if (textureId == null || textureId == -1) {
       return const SizedBox.shrink();
     }
 
@@ -70,56 +63,5 @@ class _ScreenShareViewState extends State<ScreenShareView> {
         );
       },
     );
-  }
-}
-
-class TextureHandler {
-  final _textureRgbaRendererPlugin = TextureRgbaRenderer();
-
-  int textureId = -1;
-
-  int texturePtr = 0;
-  final strideAlign = Platform.isMacOS ? 64 : 1;
-  final pixelFormat =
-      Platform.isMacOS ? ui.PixelFormat.bgra8888 : ui.PixelFormat.rgba8888;
-  bool initialized = false;
-  Future<void> initialize() async {
-    await _createTexture();
-    initialized = true;
-  }
-
-  Future<void> _createTexture() async {
-    if (textureId != -1) return;
-    await _textureRgbaRendererPlugin.closeTexture(0);
-    final id = await _textureRgbaRendererPlugin.createTexture(0);
-
-    if (id != -1) {
-      debugPrint("Texture register success, textureId=$id");
-      final ptr = await _textureRgbaRendererPlugin.getTexturePtr(0);
-      debugPrint("texture ptr: ${ptr.toRadixString(16)}");
-
-      textureId = id;
-      texturePtr = ptr;
-    }
-  }
-
-  void renderFrame(Uint8List frame, int? width, int? height) async {
-    if (width == null || height == null) return;
-    try {
-      final stride = width * 4;
-
-      // final stride = (width * 4 + (strideAlign - 1)) & ~(strideAlign - 1);
-
-      await _textureRgbaRendererPlugin.onRgba(0, frame, height, width, stride);
-    } catch (e, stackTrace) {
-      debugPrint('Error processing frame: $e');
-      debugPrint('Stack trace: $stackTrace');
-    }
-  }
-
-  void dispose() {
-    if (textureId != -1) {
-      _textureRgbaRendererPlugin.closeTexture(0);
-    }
   }
 }

@@ -23,6 +23,16 @@ A new Flutter plugin project.
   # s.resource_bundles = {'flutter_screen_share_privacy' => ['Resources/PrivacyInfo.xcprivacy']}
 
   s.dependency 'FlutterMacOS'
+  s.dependency 'SDWebImageWebPCoder'
+  s.dependency 'SDWebImage'
+  s.xcconfig = {
+    'OTHER_LDFLAGS' => '-framework "SDWebImageWebPCoder"',
+    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+  }
+  s.xcconfig = {
+    'OTHER_LDFLAGS' => '-framework "SDWebImage"',
+    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+  }
 
   s.platform = :osx, '12.3'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }

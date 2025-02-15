@@ -6,6 +6,7 @@ This plugin allows you to capture and stream the screen content of a macOS devic
 ## Basic Concepts
 
 * **ScreenCaptureKit (SCKit):** This plugin utilizes Apple's ScreenCaptureKit API for high-performance screen recording capabilities.
+* **texture_rgba_renderer:** This package is used to render the raw RGBA frame data onto a Flutter texture. This allows for efficient display of the captured screen content.
 
 ## Permissions
 
@@ -78,7 +79,6 @@ void startCaptureWithSource(Display? source) async {
 }
 ```
 
-* **`context`:** The `BuildContext` for displaying the source selection dialog.
 * **`onData`:** A callback function that receives the captured frame data as a `Uint8List`.
 * **`source`:** A `Display` object representing either a display or a window. If null, the default display is used.
 
