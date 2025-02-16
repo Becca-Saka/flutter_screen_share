@@ -1,5 +1,5 @@
 name: flutter_screen_share
-description: "A new Flutter plugin project."
+description: "A Flutter plugin for screen sharing on macOS using ScreenCaptureKit."
 version: 0.0.1
 homepage: null
 

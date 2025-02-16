@@ -21,7 +21,7 @@ class _ScreenCaptureState extends State<ScreenCapture> {
     await screenSharer.startCaptureWithDialog(
       context: context,
       onData: (Uint8List frame) {
-        print('Frame received: ${frame.length} bytes');
+        debugPrint('Frame received: ${frame.length} bytes');
       },
     );
     setState(() {});
