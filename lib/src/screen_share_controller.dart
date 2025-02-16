@@ -10,14 +10,10 @@ import 'display.dart';
 class ScreenShareController {
   ValueNotifier<bool> isSharing = ValueNotifier(false);
 
-  Stream<Uint8List>? frameStream;
   int? height;
   int? width;
   int? textureId;
   StreamSubscription<Uint8List>? _subscription;
-  Future<void> setShowingPreview(bool value) async {
-    await _getDisplaySize(null);
-  }
 
   Future<void> _getDisplaySize(Display? source) async {
     // Gets displays first to know dimensions
@@ -64,12 +60,10 @@ class ScreenShareController {
         },
         onError: (error) {
           debugPrint('Stream error: $error');
-          release();
+          _release();
         },
         cancelOnError: false,
       );
-
-      frameStream = stream;
     } catch (e) {
       debugPrint('Error starting screen share: $e');
     }
@@ -77,17 +71,11 @@ class ScreenShareController {
 
   Future<void> stopCapture() async {
     await FlutterScreenShare.stopCapture();
-    await release();
+    await _release();
   }
 
-  Future<void> release() async {
+  Future<void> _release() async {
     _subscription?.cancel();
-    setShowingPreview(false);
-    frameStream = null;
     isSharing.value = false;
-  }
-
-  void dispose() {
-    stopCapture();
   }
 }

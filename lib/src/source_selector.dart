@@ -15,7 +15,6 @@ Future<Display?> showSourceSelectionDialog(BuildContext context) async {
       return AlertDialog(
         title: const Text('Select a Source'),
         content: SizedBox(
-          // Use a constrained height if there are many items.
           height: 300,
           width: double.maxFinite,
           child: ListView.builder(

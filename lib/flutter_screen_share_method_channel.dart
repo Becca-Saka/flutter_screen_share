@@ -22,9 +22,6 @@ class MethodChannelFlutterScreenShare extends FlutterScreenSharePlatform {
       'source': source?.toMap(),
       'options': (options ?? defaultOptions).toMap(),
     };
-
-    // Debug print
-    print('Sending arguments: $arguments');
     return await _channel.invokeMethod('startCapture', arguments);
   }
 

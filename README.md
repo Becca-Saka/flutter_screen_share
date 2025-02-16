@@ -1,36 +1,50 @@
+# FlutterScreenSharePlugin
 
-# Flutter Screen Share Plugin Documentation
+A Flutter plugin for macOS that enables screen sharing using Apple's ScreenCaptureKit (for macOS 12.3 and later) and CGDisplayStream (for earlier versions). This plugin supports real-time screen capture with WebP/JPEG encoding and integration with Flutter's texture system.
 
-This plugin allows you to capture and stream the screen content of a macOS device in your Flutter application.
-
-## Basic Concepts
-
-* **ScreenCaptureKit (SCKit):** This plugin utilizes Apple's ScreenCaptureKit API for high-performance screen recording capabilities.
-* **texture_rgba_renderer:** This package is used to render the raw RGBA frame data onto a Flutter texture. This allows for efficient display of the captured screen content.
-
-## Permissions
-
-This plugin requires Screen Recording permissions on macOS. Users will be prompted to grant these permissions when the screen capture is first initiated.
-
-To ensure your application has the necessary permissions, you must add the following key to your `entitlements.macOS` file:
-
-```xml
-<key>com.apple.security.screen-recording</key>
-<true/>
-```
-
-**Important:** ScreenCaptureKit is available on macOS 12.3 and later. Ensure your deployment target is set accordingly.
+## Features
+- Supports macOS screen sharing
+- Uses **ScreenCaptureKit** for modern macOS versions (12.3+)
+- Falls back to **CGDisplayStream** for older macOS versions
+- Encodes frames as **WebP** or **JPEG**
+- Supports **Flutter texture rendering**
+- Provides **streaming frame data**
+- Allows display and window selection for capture
 
 ## Installation
 
-Add the plugin to your `pubspec.yaml` file:
+Add the plugin to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   flutter_screen_share: ^latest_version
 ```
 
-Then, run `flutter pub get`.
+Run:
+```sh
+flutter pub get
+```
+
+## macOS Setup
+
+### Info.plist Permissions
+Add these permissions to your `macos/Runner/Info.plist` file:
+
+```xml
+<key>NSScreenCaptureUsageDescription</key>
+<string>This app needs screen capture access.</string>
+```
+
+### Entitlements
+Modify your `macos/Runner/debug.entitlements` and `release.entitlements`:
+
+```xml
+<key>com.apple.security.screen-recording</key>
+	<true/>
+
+<key>com.apple.security.device.screen-capture</key>
+<true/> //older mac versions
+```
 
 ## Usage
 
@@ -38,131 +52,92 @@ Then, run `flutter pub get`.
 
 ```dart
 import 'package:flutter_screen_share/flutter_screen_share.dart';
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 ```
 
-### 2. Create a `ScreenShareController`
+### 2. Create a ScreenShareController
 
 ```dart
-ScreenShareController screenSharer = ScreenShareController();
+final controller = ScreenShareController();
 ```
 
-### 3. Start Capture
+### 3. Start Screen Capture
 
-* **`startCaptureWithDialog`:** Allows the user to select the source (display or window) to capture.
-* **`startCapture`:** Starts screen capture with the default display if no source is passed, or with the source passed.
-
+Using a Dialog:
 ```dart
-void startCapture() async {
-    await screenSharer.startCaptureWithDialog(
-      context: context,
-      onData: (Uint8List frame) {
-        // Handle the frame data here
-      },
-    );
-    setState(() {});
-}
+controller.startCaptureWithDialog(
+  context: context,
+  onData: (Uint8List frame) {
+    // Handle frame data
+  },
+);
 ```
 
-or
-
+Using a Specific Display:
 ```dart
-void startCaptureWithSource(Display? source) async {
-    await screenSharer.startCapture(
-      source: source,
-      onData: (Uint8List frame) {
-        // Handle the frame data here
-      },
-    );
-    setState(() {});
+final displays = await FlutterScreenShare.getDisplays();
+if (displays.isNotEmpty) {
+  final source = displays.first;
+  controller.startCapture(
+    source: source,
+    onData: (Uint8List frame) {
+      // Handle frame data
+    },
+  );
 }
 ```
 
 * **`onData`:** A callback function that receives the captured frame data as a `Uint8List`.
 * **`source`:** A `Display` object representing either a display or a window. If null, the default display is used.
 
-### 4. Stop Capture
+### 4. Display Captured Screen
 
 ```dart
-void stopCapture() async {
-  await screenSharer.stopCapture();
-  setState(() {});
-}
+ScreenShareView(controller: controller),
 ```
 
-### 5. Display the Captured Content
-
-Use the `ScreenShareView` widget to display the captured content.
+### 5. Stop Screen Capture
 
 ```dart
-ValueListenableBuilder(
-    valueListenable: screenSharer.isSharing,
-    builder: (context, isSharing, child) {
-        return Column(
-          children: [
-            if (isSharing)
-              Expanded(
-                child: Center(child: ScreenShareView(controller: screenSharer)),
-              ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: !isSharing ? startCapture : stopCapture,
-                child: Text(!isSharing ? 'Start Capture' : 'Stop Capture'),
-              ),
-            ),
-          ],
-        );
-    }
-);
+controller.stopCapture();
 ```
 
-### 6. Dispose the Controller
+### 6. Stream Captured Frames
 
 ```dart
-@override
-void dispose() {
-  screenSharer.dispose();
-  super.dispose();
-}
+controller.frameStream?.listen((Uint8List frame) {
+  // Process frame
+});
 ```
 
-### 7. Get Available Displays
+### 7. Encoding Options
 
 ```dart
-Future<void> getAvailableDisplays() async {
-  final displays = await FlutterScreenShare.getDisplays();
-  for (var display in displays) {
-    print('Display ID: ${display.id}, Width: ${display.width}, Height: ${display.height}');
-  }
-}
+final encodingOptions = EncodingOptions(type: "webp", fps: 30, quality: 0.9);
+controller.startCapture(source: source, options: encodingOptions);
 ```
 
-### 8. Get Available Sources (Displays and Windows)
+## Available Methods
 
-```dart
-Future<void> getAvailableSources() async {
-  final sources = await FlutterScreenShare.getSources();
-  for (var source in sources) {
-      if(source.type == display){
-          print('Display ID: ${source.id}, Width: ${source.width}, Height: ${source.height}');
-      }else if(source.type == window){
-          print('Window ID: ${source.id}, Name: ${source.name}, Owner: ${source.owner}');
-      }
-  }
-}
-```
+| Method | Description |
+|--------|-------------|
+| `FlutterScreenShare.startCapture([Display? source, EncodingOptions? options])` | Starts screen capture |
+| `FlutterScreenShare.getStream()` | Returns a stream of captured frames |
+| `FlutterScreenShare.stopCapture()` | Stops screen capture |
+| `FlutterScreenShare.getDisplays()` | Returns available displays |
+| `FlutterScreenShare.getSources()` | Returns available sources (displays and windows) |
+| `ScreenShareController.startCaptureWithDialog(context, onData)` | Starts capture with a selection dialog |
+| `ScreenShareController.startCapture(source, onData)` | Starts capture with a selected source |
+| `ScreenShareController.stopCapture()` | Stops screen capture |
+| `ScreenShareController.isSharing` | Indicates if sharing is active |
+| `ScreenShareController.textureId` | Returns the texture ID |
 
-### Available Methods
+## Notes
+- Ensure permissions are granted.
+- Works with **ScreenCaptureKit** (macOS 12.3+) and **CGDisplayStream** (earlier versions but it is marked deprecated by apple).
+- Encodes frames in **WebP/JPEG**.
+- The `ScreenShareController` manages screen sharing lifecycle.
+- The `ScreenShareView` renders the captured screen using Flutter's texture API.
 
-* **`ScreenShareController.startCaptureWithDialog(BuildContext context, Function(Uint8List)? onData)`:** Starts screen capture with a dialog to select the source.
-* **`ScreenShareController.startCapture(Display? source, Function(Uint8List)? onData)`:** Starts screen capture with a specific source, or the default display if the source is null.
-* **`ScreenShareController.stopCapture()`:** Stops screen capture.
-* **`ScreenShareController.dispose()`:** Disposes the controller and releases resources.
-* **`ScreenShareController.setShowingPreview(bool value)`:** Enables or disables previewing the captured screen.
-* **`ScreenShareView(ScreenShareController controller)`:** A widget to display the captured screen content.
+## License
+[MIT License](LICENSE)
 
-## Example Usage
-
-See the provided example code for a complete implementation. Remember to handle potential errors and exceptions appropriately in your application.

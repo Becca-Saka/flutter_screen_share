@@ -11,20 +11,10 @@ class ScreenShareView extends StatefulWidget {
 
 class _ScreenShareViewState extends State<ScreenShareView> {
   @override
-  void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await widget.controller.setShowingPreview(true);
-      setState(() {});
-    });
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
-    // final texture = controller.textureHandler;
     final textureId = controller.textureId;
-    print(textureId);
+
     if (textureId == null || textureId == -1) {
       return const SizedBox.shrink();
     }
@@ -43,17 +33,15 @@ class _ScreenShareViewState extends State<ScreenShareView> {
         double displayWidth, displayHeight;
 
         if (containerAspectRatio > aspectRatio) {
-          // If the container is wider than the video, match height
           displayHeight = maxHeight;
           displayWidth = displayHeight * aspectRatio;
         } else {
-          // If the container is taller than the video, match width
           displayWidth = maxWidth;
           displayHeight = displayWidth / aspectRatio;
         }
 
         return Container(
-          color: Colors.grey[900], // Dark gray background
+          color: Colors.grey[900],
           alignment: Alignment.center,
           child: SizedBox(
             width: displayWidth,

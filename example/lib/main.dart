@@ -21,7 +21,6 @@ class _ScreenCaptureState extends State<ScreenCapture> {
     await screenSharer.startCaptureWithDialog(
       context: context,
       onData: (Uint8List frame) {
-        //Send to websocket
         print('Frame received: ${frame.length} bytes');
       },
     );
@@ -36,7 +35,7 @@ class _ScreenCaptureState extends State<ScreenCapture> {
 
   @override
   void dispose() {
-    screenSharer.dispose();
+    screenSharer.stopCapture();
 
     super.dispose();
   }
