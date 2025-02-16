@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_screen_share/flutter_screen_share.dart';
-import 'package:flutter_screen_share/src/display.dart';
-import 'package:flutter_screen_share/src/encording.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

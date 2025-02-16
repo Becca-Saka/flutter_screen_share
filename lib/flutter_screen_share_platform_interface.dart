@@ -4,7 +4,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'flutter_screen_share_method_channel.dart';
 import 'src/display.dart';
-import 'src/encording.dart';
+import 'src/encoding.dart';
 
 abstract class FlutterScreenSharePlatform extends PlatformInterface {
   /// Constructs a FlutterScreenSharePlatform.

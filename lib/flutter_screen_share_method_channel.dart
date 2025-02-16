@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'flutter_screen_share_platform_interface.dart';
 import 'src/display.dart';
-import 'src/encording.dart';
+import 'src/encoding.dart';
 
 /// An implementation of [FlutterScreenSharePlatform] that uses method channels.
 class MethodChannelFlutterScreenShare extends FlutterScreenSharePlatform {

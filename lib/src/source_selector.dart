@@ -3,17 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screen_share/flutter_screen_share.dart';
 
-import 'display.dart';
-
 /// Displays a custom dialog with a list of shareable sources.
 /// Returns the selected source [Display] or null if the user cancels.
-Future<Display?> showSourceSelectionDialog(BuildContext context) async {
+Future<Display?> showSourceSelectionDialog(
+  BuildContext context, {
+  Widget Function(List<Display>)? builder,
+}) async {
   // Get the list of available sources from the native side.
   final sources = await FlutterScreenShare.getSources();
 
   return showDialog<Display>(
     context: context,
     builder: (context) {
+      if (builder != null) {
+        return builder(sources);
+      }
       return AlertDialog(
         title: const Text('Select a Source'),
         content: SizedBox(

@@ -2,8 +2,10 @@ import 'dart:typed_data';
 
 import 'flutter_screen_share_platform_interface.dart';
 import 'src/display.dart';
-import 'src/encording.dart';
+import 'src/encoding.dart';
 
+export 'src/display.dart';
+export 'src/encoding.dart';
 export 'src/screen_share_controller.dart';
 export 'src/screen_share_view.dart';
 
