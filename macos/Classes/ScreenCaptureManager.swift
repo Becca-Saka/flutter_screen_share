@@ -18,7 +18,7 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     private var quality: Float = 0.8
     private let webpEncoder = SDImageWebPCoder.shared
     private let processingQueue = DispatchQueue(label: "com.screen.share.processing", qos: .userInteractive, attributes: .concurrent)
-
+    
     init(plugin: FlutterScreenSharePlugin) {
         self.plugin = plugin
         super.init()
@@ -38,25 +38,25 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     
     @available(macOS 12.3, *)
     func startCapture(_ result: @escaping FlutterResult, source: [String: Any]?) {
-       guard let plugin = plugin,
-          let ciContext = plugin.ciContext else {
-        result(FlutterError(code: "INIT_ERROR", message: "Plugin or CIContext not initialized", details: nil))
-        return
-    }
-    
-    let sourceConfig = source?["source"] as? [String: Any]
-    let encodingOptions = source?["options"] as? [String: Any] ?? [:]
-    
-    encodingType = encodingOptions["type"] as? String ?? "webp"
-    let fps = encodingOptions["fps"] as? Int ?? 24
-    frameInterval = 1.0 / Double(fps)
-    quality = Float(encodingOptions["quality"] as? Double ?? 0.8)
-    
-    frameEncoder = FrameEncoder(
-        quality: quality,
-        ciContext: ciContext,
-        encodingType: encodingType
-    )
+        guard let plugin = plugin,
+              let ciContext = plugin.ciContext else {
+            result(FlutterError(code: "INIT_ERROR", message: "Plugin or CIContext not initialized", details: nil))
+            return
+        }
+        
+        let sourceConfig = source?["source"] as? [String: Any]
+        let encodingOptions = source?["options"] as? [String: Any] ?? [:]
+        
+        encodingType = encodingOptions["type"] as? String ?? "webp"
+        let fps = encodingOptions["fps"] as? Int ?? 24
+        frameInterval = 1.0 / Double(fps)
+        quality = Float(encodingOptions["quality"] as? Double ?? 0.8)
+        
+        frameEncoder = FrameEncoder(
+            quality: quality,
+            ciContext: ciContext,
+            encodingType: encodingType
+        )
         
         Task {
             do {
@@ -252,21 +252,21 @@ class ScreenCaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
         guard let imageBuffer = sampleBuffer.imageBuffer else { return }
         
         guard let plugin = self.plugin,
-        let texture = plugin.metalTexture else { return }
-      
-            CVPixelBufferLockBaseAddress(imageBuffer, .readOnly)
-            let region = MTLRegionMake2D(0, 0, CVPixelBufferGetWidth(imageBuffer), CVPixelBufferGetHeight(imageBuffer))
-            texture.replace(region: region,
-                            mipmapLevel: 0,
-                            withBytes: CVPixelBufferGetBaseAddress(imageBuffer)!,
-                            bytesPerRow: CVPixelBufferGetBytesPerRow(imageBuffer))
-            CVPixelBufferUnlockBaseAddress(imageBuffer, .readOnly)
-            
-           DispatchQueue.main.async { [weak self] in
-    guard let self = self,
-          let textureId = plugin.textureId else { return }
-    plugin.textureRegistry?.textureFrameAvailable(textureId)
-}
+              let texture = plugin.metalTexture else { return }
+        
+        CVPixelBufferLockBaseAddress(imageBuffer, .readOnly)
+        let region = MTLRegionMake2D(0, 0, CVPixelBufferGetWidth(imageBuffer), CVPixelBufferGetHeight(imageBuffer))
+        texture.replace(region: region,
+                        mipmapLevel: 0,
+                        withBytes: CVPixelBufferGetBaseAddress(imageBuffer)!,
+                        bytesPerRow: CVPixelBufferGetBytesPerRow(imageBuffer))
+        CVPixelBufferUnlockBaseAddress(imageBuffer, .readOnly)
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let textureId = plugin.textureId else { return }
+            plugin.textureRegistry?.textureFrameAvailable(textureId)
+        }
         
         
         
