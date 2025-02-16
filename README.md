@@ -1,4 +1,5 @@
 # FlutterScreenSharePlugin
+[![Pub.dev](https://img.shields.io/pub/v/flutter_screen_share.svg)](https://pub.dev/packages/flutter_screen_share)
 
 A Flutter plugin for macOS that enables screen sharing using Apple's ScreenCaptureKit (for macOS 12.3 and later) and CGDisplayStream (for earlier versions). This plugin supports real-time screen capture with WebP/JPEG encoding and integration with Flutter's texture system.
 
