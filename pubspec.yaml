@@ -1,7 +1,7 @@
 name: flutter_screen_share
 description: "A Flutter plugin for screen sharing on macOS using ScreenCaptureKit."
 version: 0.0.1
-homepage: null
+homepage: "https://github.com/Becca-Saka/flutter_screen_share"
 
 environment:
   sdk: ^3.7.0
