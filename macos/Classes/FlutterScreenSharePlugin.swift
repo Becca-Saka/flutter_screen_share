@@ -5,7 +5,7 @@ import Metal
 import SDWebImage
 import SDWebImageWebPCoder
 
-public class FlutterScreenSharePlugin: NSObject, FlutterPlugin, SCStreamDelegate {
+public class FlutterScreenSharePlugin: NSObject, FlutterPlugin {
     internal var streamOutput: FlutterEventSink?
     internal var textureRegistry: FlutterTextureRegistry?
     internal var textureId: Int64?
@@ -52,12 +52,7 @@ public class FlutterScreenSharePlugin: NSObject, FlutterPlugin, SCStreamDelegate
     }
     private func startCapture(_ result: @escaping FlutterResult, source: [String: Any]?) {
         captureManager = ScreenCaptureManager(plugin: self)
-        
-        if #available(macOS 12.3, *) {
-            captureManager?.startCapture(result, source: source)
-        } else {
-            captureManager?.startCaptureWithCGStream(result, source: source)
-        }
+        captureManager?.startCapture(result, source: source)
     }
     private func stopCapture(_ result: @escaping FlutterResult) {
         captureManager?.stopCapture(result)
@@ -76,65 +71,89 @@ public class FlutterScreenSharePlugin: NSObject, FlutterPlugin, SCStreamDelegate
         }
         metalTexture = nil
     }
-    
     private func getDisplays(_ result: @escaping FlutterResult) {
-        Task {
-            do {
-                let content = try await SCShareableContent.current
-                let displays = content.displays.map { [
-                    "type": "display",
-                    "id": $0.displayID,
-                    "width": $0.width,
-                    "height": $0.height,
-                    "name": "Display \($0.displayID)"
-                ] }
-                result(displays)
-            } catch {
-                result(FlutterError(code: "DISPLAYS_ERROR", message: error.localizedDescription, details: nil))
+        if #available(macOS 12.3, *) {
+            Task {
+                do {
+                    let content = try await SCShareableContent.current
+                    let displays = content.displays.map { [
+                        "type": "display",
+                        "id": $0.displayID,
+                        "width": $0.width,
+                        "height": $0.height,
+                        "name": "Display \($0.displayID)"
+                    ] }
+                    result(displays)
+                } catch {
+                    result(FlutterError(code: "DISPLAYS_ERROR", message: error.localizedDescription, details: nil))
+                }
             }
+        } else {
+            // Fallback for older macOS - use CGDisplay APIs
+            let activeDisplays = CGDisplayCopyAllDisplayModes(CGMainDisplayID(), nil) as? [CGDisplayMode] ?? []
+            let displays = activeDisplays.map { mode -> [String: Any] in
+                [
+                    "type": "display",
+                    "id": CGMainDisplayID(),
+                    "width": mode.pixelWidth,
+                    "height": mode.pixelHeight,
+                    "name": "Display \(CGMainDisplayID())"
+                ]
+            }
+            result(displays)
         }
     }
     
     private func getSources(_ result: @escaping FlutterResult) {
-        Task {
-            do {
-                let content = try await SCShareableContent.current
-                var sources: [[String: Any]] = []
-                
-                for display in content.displays {
-                    sources.append([
-                        "type": "display",
-                        "id": display.displayID,
-                        "width": display.width,
-                        "height": display.height,
-                        "name": "Display \(display.displayID)"
-                    ])
+        if #available(macOS 12.3, *) {
+            Task {
+                do {
+                    let content = try await SCShareableContent.current
+                    var sources: [[String: Any]] = []
+                    
+                    for display in content.displays {
+                        sources.append([
+                            "type": "display",
+                            "id": display.displayID,
+                            "width": display.width,
+                            "height": display.height,
+                            "name": "Display \(display.displayID)"
+                        ])
+                    }
+                    
+                    for window in content.windows {
+                        let ownerName = getOwnerName(for: window.windowID) ?? "Unknown App"
+                        sources.append([
+                            "type": "window",
+                            "id": window.windowID,
+                            "name": window.title ?? "Window \(window.windowID)",
+                            "owner": ownerName,
+                        ])
+                    }
+                    result(sources)
+                } catch {
+                    result(FlutterError(code: "SOURCE_ERROR", message: error.localizedDescription, details: nil))
                 }
-                
-                for window in content.windows {
-                    let ownerName = getOwnerName(for: window.windowID) ?? "Unknown App"
-                    sources.append([
-                        "type": "window",
-                        "id": window.windowID,
-                        "name": window.title ?? "Window \(window.windowID)",
-                        "owner": ownerName,
-                    ])
-                }
-                result(sources)
-            } catch {
-                result(FlutterError(code: "SOURCE_ERROR", message: error.localizedDescription, details: nil))
             }
+        } else {
+            // Fallback for older macOS - only displays supported
+            let activeDisplays = CGDisplayCopyAllDisplayModes(CGMainDisplayID(), nil) as? [CGDisplayMode] ?? []
+            let sources = activeDisplays.map { mode -> [String: Any] in
+                [
+                    "type": "display",
+                    "id": CGMainDisplayID(),
+                    "width": mode.pixelWidth,
+                    "height": mode.pixelHeight,
+                    "name": "Display \(CGMainDisplayID())"
+                ]
+            }
+            result(sources)
         }
     }
     
-    public func stream(_ stream: SCStream, didStopWithError error: Error) {
-        DispatchQueue.main.async {
-            self.streamOutput?(FlutterError(code: "STREAM_ERROR", message: error.localizedDescription, details: nil))
-        }
-    }
 }
 
-extension FlutterScreenSharePlugin: FlutterTexture {
+extension FlutterScreenSharePlugin: FlutterTexture, FlutterStreamHandler {
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
         guard let texture = metalTexture else { return nil }
         
@@ -174,9 +193,6 @@ extension FlutterScreenSharePlugin: FlutterTexture {
         
         return Unmanaged.passRetained(pixelBuffer)
     }
-}
-
-extension FlutterScreenSharePlugin: FlutterStreamHandler {
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         streamOutput = events
         return nil
@@ -185,5 +201,13 @@ extension FlutterScreenSharePlugin: FlutterStreamHandler {
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         streamOutput = nil
         return nil
+    }
+}
+@available(macOS 12.3, *)
+extension FlutterScreenSharePlugin: SCStreamDelegate {
+    public func stream(_ stream: SCStream, didStopWithError error: Error) {
+        DispatchQueue.main.async {
+            self.streamOutput?(FlutterError(code: "STREAM_ERROR", message: error.localizedDescription, details: nil))
+        }
     }
 }
